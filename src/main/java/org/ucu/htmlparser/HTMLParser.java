@@ -6,81 +6,65 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class HTMLParser {
-    private String url;
 
-    CompanyInfo getLogoElementFromLinkTag(Document doc, CompanyInfo info) {
+
+    static void getLogoElementFromLinkTag(Document doc, ArrayList<String> logos, ArrayList<String> icons) {
+        // Finds logos in link tags in the document, and provides them to CompanyInfo lists
         Elements result = doc.head().select("link[rel]");
         if (result.first() != null){
-            // System.out.println("debug");
-            // System.out.println(logos);
             for(Element item : result) {
                 String attribute = item.attr("rel");
                 if (attribute.contains("icon")) {
-                    info.icons.add(item.attr("href"));
+                    icons.add(item.attr("href"));
                 } else if (attribute.contains("logo")) {
-                    info.logos.add(item.attr("href"));
+                    logos.add(item.attr("href"));
                 }
             }
-            return info;
         }
-        return null;
     }
-    CompanyInfo getLogoElementFromImgTag(Document doc, CompanyInfo info) {
+    static void getLogoElementFromImgTag(Document doc, ArrayList<String> logos, ArrayList<String> icons) {
+        // Finds logos in img tags in the document, and provides them to CompanyInfo lists
         Elements result = doc.select("img[src]");
-        /*System.out.println();
-        System.out.println(logos);
-        System.out.println();*/
         if (result.first() != null){
-            // System.out.println("debug");
-            // System.out.println(logos);
             for(Element item : result){
                 String attribute = item.attr("src");
                 if(attribute.contains("logo")){
-                    info.logos.add(attribute);
+                    logos.add(attribute);
                 }else if(attribute.contains("icon")){
-                    info.icons.add(attribute);
+                    icons.add(attribute);
                 }
             }
         }
-        return info;
     }
 
-    public void parse(String url){
-
-        this.url = url;
-        CompanyInfo i = new CompanyInfo();
+    public static CompanyInfo parse(String url, CompanyInfo info){
         try {
             final Document document = Jsoup.connect(url)
                     .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:107.0) Gecko/20100101 Firefox/107.0")
                     .timeout(30000)
                     .get();
-            System.out.println(url.concat(" link tag"));
-            System.out.println(getLogoElementFromLinkTag(document, i));
-            System.out.println(url.concat(" img tag"));
-            System.out.println(getLogoElementFromImgTag(document, i));
-            ArrayList<String> logos = new ArrayList<String>();
+            getLogoElementFromLinkTag(document, info.logos, info.icons);
+            getLogoElementFromImgTag(document, info.logos, info.icons);
 
         }catch (Exception e){
             System.out.println("Unable to retrieve data from URL: " + url);
             System.out.println(e);
-        }finally {
-            this.url = null;
         }
-
+        return info;
     }
-    public static void main(String[] args){
-        HTMLParser parser = new HTMLParser();
-        parser.parse("https://twitter.com");
-        parser.parse("https://google.com.ua/");
-        parser.parse("https://www.facebook.com");
-        parser.parse("https://www.linkedin.com");
-        parser.parse("https://www.instagram.com");
-        parser.parse("https://www.youtube.com");
-        parser.parse("https://www.reddit.com");
-        parser.parse("https://www.tumblr.com");
+
+    static void test(){
+        CompanyInfo info = new CompanyInfo();
+        HTMLParser.parse("https://ucu.edu.ua", info);
+        HTMLParser.parse("https://twitter.com", info);
+        HTMLParser.parse("https://google.com.ua/", info);
+        HTMLParser.parse("https://www.facebook.com", info);
+        HTMLParser.parse("https://www.linkedin.com", info);
+        HTMLParser.parse("https://www.instagram.com", info);
+        HTMLParser.parse("https://www.youtube.com", info);
+        HTMLParser.parse("https://www.reddit.com", info);
+        HTMLParser.parse("https://www.tumblr.com", info);
     }
 }
